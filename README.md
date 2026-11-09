@@ -69,20 +69,19 @@ cd ~/StreamNest/deploy && sudo ./install.sh
 
 ## 上传 GitHub
 
-本目录不含任何媒体文件、IP、密钥或本地配置，可以直接公开。
+本前端已发布在 **https://github.com/hunkguo/streamnest-web**（公开仓库），
+仓库里只有本目录的 7 个纯代码文件，不含任何媒体、IP、密钥或本地配置。
 
-**方式一：整个 StreamNest 主仓库一起推**（`site/` 自然包含在内）
+后续更新（在 `streamnest-web` 的工作副本里，与主仓库平级，避免嵌套仓库）：
 
 ```bash
-cd StreamNest
-git remote add origin https://github.com/<you>/StreamNest.git   # 已配则跳过
-git push -u origin main
+git add . && git commit -m "..." && git push
 ```
 
-**方式二：只把前端源码做成独立仓库**
+服务器侧 `cd /srv/streamnest/site && git pull` 同步。
 
-`site/` 在主仓库里是普通目录，直接在这里 `git init` 会产生嵌套仓库，
-所以先复制出去再初始化：
+**在别的账号下重建一份**：`site/` 在主仓库里是普通目录，直接在这里
+`git init` 会产生嵌套仓库，所以先复制出去再初始化：
 
 ```bash
 cp -r StreamNest/site ~/streamnest-web
@@ -94,4 +93,8 @@ gh repo create streamnest-web --public --source=. --push
 # 私有仓库把 --public 换成 --private
 ```
 
-之后在本目录改完代码 `git push` 即可；服务器侧 `git pull` 同步。
+也可以把整个 StreamNest 主仓库推上去，`site/` 自然包含在内：
+
+```bash
+cd StreamNest && git push -u origin main
+```
