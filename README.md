@@ -22,8 +22,9 @@ Nginx 把 `/media/` 用 `alias` 指过去 —— 两边物理分离，互不干�
 
 ## 数据契约
 
-唯一的数据来源是 `/media/manifest.json` —— 由转码器 `publish.append_manifest()`
-在每完成一个视频后写入的 JSON 数组。每条记录：
+唯一的数据来源是 `/media/manifest.json` —— 由本地 PC 上的转码器
+（`publish.append_manifest()`）在每完成一个视频后写入，再由 `local/upload.py`
+与服务器已有清单合并后同步上来的 JSON 数组。每条记录：
 
 | 字段 | 说明 |
 |---|---|
