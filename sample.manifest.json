@@ -1,0 +1,16 @@
+[
+  {
+    "base": "demo",
+    "title": "示例视频",
+    "description": "本地预览用的示例条目，播放地址与封面并不存在",
+    "duration": 18,
+    "video_url": "/media/demo/index.m3u8",
+    "master": "/media/demo/index.m3u8",
+    "thumbnail": "/media/demo/poster.jpg",
+    "poster": "/media/demo/poster.jpg",
+    "vtt": "/media/demo/thumbnails/thumbnails.vtt",
+    "video_type": "application/x-mpegURL",
+    "source_file": "demo.mp4",
+    "converted_at": "2026-01-01T00:00:00"
+  }
+]

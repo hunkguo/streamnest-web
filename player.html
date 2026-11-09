@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>播放 · StreamNest</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap player-wrap">
+  <a class="back" href="/">← 返回视频库</a>
+  <h1 id="title">加载中…</h1>
+  <div class="player-box">
+    <video id="video" controls playsinline></video>
+  </div>
+  <div class="meta-line" id="meta"></div>
+  <div class="meta-line" id="fallback" hidden></div>
+</main>
+
+<script>
+/* 播放页：按 ?v=<base> 从 manifest.json 找到对应条目。
+   hls.js 优先用部署时下载到站点的本地副本，失败再依次回退公共 CDN。
+   Safari / iOS 走原生 HLS，无需 hls.js。 */
+(function () {
+  'use strict';
+  var MANIFEST = '/media/manifest.json';
+  var HLS_SOURCES = [
+    '/hls.min.js',
+    'https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js',
+    'https://unpkg.com/hls.js@1.5.17/dist/hls.min.js'
+  ];
+
+  function qs(name) {
+    var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+  function fmtDuration(sec) {
+    sec = Math.max(0, Math.round(Number(sec) || 0));
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return h > 0 ? h + ':' + pad(m) + ':' + pad(s) : m + ':' + pad(s);
+  }
+  function loadScript(src, onOk, onFail) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = onOk;
+    s.onerror = onFail;
+    document.head.appendChild(s);
+  }
+  function loadHlsChain(i, onOk, onFail) {
+    if (i >= HLS_SOURCES.length) { onFail(); return; }
+    loadScript(HLS_SOURCES[i], onOk, function () { loadHlsChain(i + 1, onOk, onFail); });
+  }
+
+  var video = document.getElementById('video');
+  var titleEl = document.getElementById('title');
+  var metaEl = document.getElementById('meta');
+  var fallbackEl = document.getElementById('fallback');
+
+  fetch(MANIFEST, { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (list) {
+      var base = qs('v');
+      var it = (Array.isArray(list) ? list : []).filter(function (x) {
+        return String(x.base) === base;
+      })[0];
+      if (!it) {
+        titleEl.textContent = '未找到该视频';
+        metaEl.textContent = '视频标识：' + base;
+        return;
+      }
+      document.title = (it.title || base) + ' · StreamNest';
+      titleEl.textContent = it.title || base;
+      metaEl.textContent = '时长 ' + fmtDuration(it.duration) +
+        ' · 来源 ' + (it.source_file || '-') +
+        ' · 转码于 ' + String(it.converted_at || '').slice(0, 16).replace('T', ' ');
+      if (it.poster || it.thumbnail) video.poster = it.poster || it.thumbnail;
+
+      var src = it.video_url || it.master;
+      if (!src) { titleEl.textContent = '该条目缺少播放地址'; return; }
+
+      // Safari / iOS 原生支持 HLS
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = src;
+        return;
+      }
+      loadHlsChain(0, function () {
+        if (typeof Hls === 'undefined' || !Hls.isSupported()) {
+          showFallback('浏览器不支持 HLS 播放，请用 Safari 或 Chrome/Edge。', src);
+          return;
+        }
+        var hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+        hls.loadSource(src);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () { video.play().catch(function () {}); });
+        hls.on(Hls.Events.ERROR, function (_e, data) {
+          if (data.fatal) {
+            showFallback('播放失败：' + (data.details || '未知错误') +
+              '。可尝试直接打开播放地址。', src);
+          }
+        });
+      }, function () {
+        showFallback('hls.js 加载失败（本机副本与公共 CDN 均不可用）。' +
+          '可在服务器执行部署脚本重新下载，或改用 Safari 打开。', src);
+      });
+    })
+    .catch(function (e) {
+      titleEl.textContent = '清单读取失败';
+      metaEl.textContent = '无法读取 ' + MANIFEST + '：' + e.message;
+    });
+
+  function showFallback(msg, src) {
+    fallbackEl.hidden = false;
+    fallbackEl.textContent = msg + ' ';
+    var a = document.createElement('a');
+    a.href = src; a.textContent = '打开 m3u8';
+    a.style.color = '#4d9fff';
+    fallbackEl.appendChild(a);
+  }
+})();
+</script>
+</body>
+</html>

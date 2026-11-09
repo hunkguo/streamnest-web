@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreamNest · 视频库</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="/">StreamNest</a>
+    <input id="search" type="search" placeholder="搜索标题或文件名…" autocomplete="off">
+    <span id="count" class="count"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" hidden>
+    <h2>还没有视频</h2>
+    <p>把视频文件放进服务器的 <code>watch/</code> 目录，转码完成后刷新本页即可出现。</p>
+    <p class="muted">首次部署若长时间为空，请检查 <code>/media/manifest.json</code> 是否存在，
+       以及转码服务是否在运行：<code>systemctl status streamnest-watcher</code></p>
+  </div>
+  <div id="error" class="empty" hidden>
+    <h2>清单读取失败</h2>
+    <p id="error-detail" class="muted"></p>
+  </div>
+</main>
+
+<footer class="footer wrap">StreamNest · 自建 HLS 视频库</footer>
+<script src="/app.js"></script>
+</body>
+</html>

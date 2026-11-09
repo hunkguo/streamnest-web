@@ -1,0 +1,23 @@
+# 前端仓库只放代码：视频、切片、封面、清单都是运行时数据，绝不入库
+media/
+manifest.json
+*.ts
+*.m3u8
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.jpg
+*.jpeg
+*.png
+*.vtt
+
+# 部署脚本下载到站点的第三方库，不属于源码
+hls.min.js
+
+# 本地预览与编辑器
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
